@@ -421,7 +421,8 @@ let testing =
    and in javascript, the baseline will be "program initialization time."
    Regardless, it's always safe to subtract two values and use the diff,
    which is all that ppx_inline_test_lib uses it for. *)
-let timestamp_ns () = Time_now.nanosecond_counter_for_timing ()
+let timestamp_ns () = Mtime_clock.now () |> Mtime.to_uint64_ns
+(* Time_now.nanoseconds_since_unix_epoch () *)
 
 let where_to_cut_backtrace =
   lazy
@@ -445,7 +446,7 @@ let time_without_resetting_random_seeds f =
     try Ok (f ()) with
     | exn -> Error (exn, Printexc.get_backtrace ())
   in
-  time_sec := Base.Int63.(timestamp_ns () - before_ns |> to_float) /. 1e9;
+  (time_sec := Stdlib.Int64.(to_float (sub (timestamp_ns ()) before_ns) /. 1e9));
   res
 ;;
 
@@ -529,7 +530,7 @@ let hum_backtrace backtrace =
   backtrace
   |> String.split_lines
   |> List.take_while ~f:(fun str ->
-       not (String.Search_pattern.matches (force where_to_cut_backtrace) str))
+    not (String.Search_pattern.matches (force where_to_cut_backtrace) str))
   |> List.map ~f:(fun str -> "  " ^ str ^ "\n")
   |> String.concat
 ;;

@@ -1,5 +1,5 @@
-open Base
 open Ppxlib
+open Stdppx
 open Ast_builder.Default
 
 (* Generated code should depend on the environment in scope as little as
@@ -146,7 +146,10 @@ module Has_tests =
     (struct
       let name = "ppx_inline_test.has_tests"
     end)
-    (Bool)
+    (struct type t = bool 
+      let t_of_sexp = Sexplib0.Sexp_conv.bool_of_sexp
+      let sexp_of_t = Sexplib0.Sexp_conv.sexp_of_bool
+    end)
 
 let all_tags =
   [ "no-js"
@@ -163,7 +166,7 @@ let all_tags =
 ;;
 
 let validate_tag tag =
-  if not (List.mem all_tags tag ~equal:String.equal)
+  if not (List.mem ~set:all_tags tag)
   then Error (Spellcheck.spellcheck all_tags tag)
   else Ok ()
 ;;
