@@ -381,7 +381,9 @@ let testing =
   else `Not_testing
 ;;
 
-let wall_time_clock_ns () = Time_now.nanoseconds_since_unix_epoch ()
+let wall_time_clock_ns () : int64 =
+  Mtime_clock.now() |> Mtime.to_uint64_ns
+  (* Time_now.nanoseconds_since_unix_epoch () *)
 
 let where_to_cut_backtrace =
   lazy
@@ -405,7 +407,7 @@ let time_without_resetting_random_seeds f =
     try Ok (f ()) with
     | exn -> Error (exn, Printexc.get_backtrace ())
   in
-  time_sec := Base.Int63.(wall_time_clock_ns () - before_ns |> to_float) /. 1e9;
+  time_sec := Stdlib.Int64.(to_float (sub (wall_time_clock_ns ()) before_ns) /. 1e9);
   res
 ;;
 
