@@ -1,5 +1,5 @@
 (library
  (name ppx_inline_test_lib)
  (public_name ppx_inline_test.runtime-lib)
- (libraries base inline_test_config mtime mtime.clock.os)
+ (libraries inline_test_config mtime mtime.clock.os)
  (preprocess no_preprocessing))
