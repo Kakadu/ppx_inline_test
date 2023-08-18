@@ -233,7 +233,7 @@ let parse_descr str =
        (try Some (Scanf.sscanf str " File %S %!" (fun file -> file, None)) with
         | _ -> None))
 ;;
-
+(*
 let () =
   if Base.Exported_for_specific_uses.am_testing
   then (
@@ -347,7 +347,7 @@ let () =
            })
     | _ -> ())
 ;;
-
+*)
 let am_test_runner =
   match Action.get () with
   | `Test_mode _ -> true
@@ -387,7 +387,7 @@ let wall_time_clock_ns () : int64 =
 
 let where_to_cut_backtrace =
   lazy
-    (Base.String.Search_pattern.create
+    (Search_pattern.create
        (__MODULE__ ^ "." ^ "time_without_resetting_random_seeds"))
 ;;
 
@@ -412,16 +412,19 @@ let time_without_resetting_random_seeds f =
 ;;
 
 let saved_caml_random_state = lazy (Stdlib.Random.State.make [| 100; 200; 300 |])
-let saved_base_random_state = lazy (Base.Random.State.make [| 111; 222; 333 |])
+let saved_base_random_state = lazy (Stdlib.Random.State.make [| 111; 222; 333 |])
+
+let deault_state = Random.get_state ()
 
 let time_and_reset_random_seeds f =
   let caml_random_state = Stdlib.Random.get_state () in
-  let base_random_state = Base.Random.State.copy Base.Random.State.default in
+  let base_random_state = Stdlib.Random.State.copy deault_state in
+  (* TODO: Check that we are dealing with random state properly *)
   Stdlib.Random.set_state (Lazy.force saved_caml_random_state);
-  Base.Random.set_state (Lazy.force saved_base_random_state);
+  Stdlib.Random.set_state (Lazy.force saved_base_random_state);
   let result = time_without_resetting_random_seeds f in
   Stdlib.Random.set_state caml_random_state;
-  Base.Random.set_state base_random_state;
+  Stdlib.Random.set_state base_random_state;
   result
 ;;
 
@@ -459,7 +462,7 @@ let name_filter_match ~name_filter descr =
   match name_filter with
   | [] -> true
   | _ :: _ ->
-    List.exists (fun substring -> Base.String.is_substring ~substring descr) name_filter
+    List.exists (fun substring -> Search_pattern.is_substring ~substring descr) name_filter
 ;;
 
 let print_delayed_errors () =
@@ -485,15 +488,23 @@ let add_hooks ((module C) : config) f () =
   C.pre_test_hook ();
   f ()
 ;;
+let list_take_while ~f:cond =
+  let rec helper acc = function
+  |[] -> List.rev acc
+  | h::tl when cond h -> helper (h::acc) tl
+  | _::tl -> helper acc tl
+  in
+  helper []
 
 let hum_backtrace backtrace =
-  let open Base in
+
+  (* let open Base in *)
   backtrace
-  |> String.split_lines
-  |> List.take_while ~f:(fun str ->
-    not (String.Search_pattern.matches (force where_to_cut_backtrace) str))
-  |> List.map ~f:(fun str -> "  " ^ str ^ "\n")
-  |> String.concat
+  |> String.split_on_char '\n'
+  |> list_take_while ~f:(fun str ->
+    not (Search_pattern.matches (Lazy.force where_to_cut_backtrace) str))
+  |> ListLabels.map ~f:(fun str -> "  " ^ str ^ "\n")
+  |> String.concat ""
 ;;
 
 let[@inline never] test_inner
@@ -557,7 +568,8 @@ let[@inline never] test_inner
           | Error (exn, backtrace) ->
             incr tests_failed;
             let backtrace = hum_backtrace backtrace in
-            let exn_str = Sexplib0.Sexp_conv.printexc_prefer_sexp exn in
+            (* let exn_str = Sexplib0.Sexp_conv.printexc_prefer_sexp exn in *)
+            let exn_str = Printexc.to_string exn in
             let sep = if String.contains exn_str '\n' then "\n" else " " in
             eprintf_or_delay
               "%s threw%s%s.\n%s%s\n%!"
@@ -672,7 +684,8 @@ let[@inline never] test_module
           | Error (exn, backtrace) ->
             incr test_modules_failed;
             let backtrace = hum_backtrace backtrace in
-            let exn_str = Sexplib0.Sexp_conv.printexc_prefer_sexp exn in
+            (* let exn_str =  Sexplib0.Sexp_conv.printexc_prefer_sexp exn in *)
+            let exn_str = Printexc.to_string exn in
             let sep = if String.contains exn_str '\n' then "\n" else " " in
             eprintf_or_delay
               ("TES" ^^ "T_MODULE at %s threw%s%s.\n%s%s\n%!")
@@ -686,7 +699,14 @@ let[@inline never] test_module
 let summarize () =
   match Action.get () with
   | `Ignore ->
-    if Sys.argv <> [||] && Filename.basename Sys.argv.(0) = "inline_tests_runner.exe"
+    Printf.printf "Sys.argv.(0) = %S\n" Sys.argv.(0);
+    if Sys.argv <> [||] &&
+      (let bname = Filename.basename Sys.argv.(0) in
+        Printf.printf "bname = %S\n" bname;
+      bname = "inline_tests_runner.exe" (*||
+        (StringLabels.starts_with ~prefix:"inline_tests_runner" bname
+      && StringLabels.ends_with ~suffix:".exe" bname) *)
+      )
     then
       Printf.eprintf
         "inline_tests_runner.exe is not supposed to be run by hand, you \n\
