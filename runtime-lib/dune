@@ -1,5 +1,11 @@
+(env
+ (dev
+  (flags
+   (:standard -warn-error -32))))
+
 (library
  (name ppx_inline_test_lib)
+ (modules ppx_inline_test_lib search_pattern)
  (public_name ppx_inline_test.runtime-lib)
  (libraries inline_test_config mtime mtime.clock.os)
  (preprocess no_preprocessing))
