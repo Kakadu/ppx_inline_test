@@ -8,4 +8,9 @@
  (modules ppx_inline_test_lib search_pattern)
  (public_name ppx_inline_test.runtime-lib)
  (libraries inline_test_config mtime mtime.clock.os)
+ (js_of_ocaml
+  (flags --no-sourcemap)
+  (javascript_files runtime.js))
+ (ocamlopt_flags
+  (:standard -linkall))
  (preprocess no_preprocessing))

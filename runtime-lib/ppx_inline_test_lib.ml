@@ -1,3 +1,5 @@
+external am_testing : unit -> bool = "Base_am_testing"
+
 module Test_result = struct
   type t =
     | Success
@@ -362,7 +364,7 @@ let parse_argv ?current args =
 ;;
 
 let () =
-  if Base.Exported_for_specific_uses.am_testing
+  if am_testing ()
   then (
     try parse_argv (Array.to_list Sys.argv) with
     | Arg.Bad msg ->
@@ -382,7 +384,7 @@ let init args =
   | Arg.Bad msg -> Error msg
   | Arg.Help msg -> Ok (Some msg)
 ;;
-*)
+
 let am_test_runner =
   match Action.get () with
   | `Test_mode _ -> true
@@ -425,9 +427,7 @@ let timestamp_ns () = Mtime_clock.now () |> Mtime.to_uint64_ns
 (* Time_now.nanoseconds_since_unix_epoch () *)
 
 let where_to_cut_backtrace =
-  lazy
-    (Search_pattern.create
-       (__MODULE__ ^ "." ^ "time_without_resetting_random_seeds"))
+  lazy (Search_pattern.create (__MODULE__ ^ "." ^ "time_without_resetting_random_seeds"))
 ;;
 
 let time_without_resetting_random_seeds f =
@@ -452,7 +452,6 @@ let time_without_resetting_random_seeds f =
 
 let saved_caml_random_state = lazy (Stdlib.Random.State.make [| 100; 200; 300 |])
 let saved_base_random_state = lazy (Stdlib.Random.State.make [| 111; 222; 333 |])
-
 let deault_state = Random.get_state ()
 
 let time_and_reset_random_seeds f =
@@ -501,7 +500,9 @@ let name_filter_match ~name_filter descr =
   match name_filter with
   | [] -> true
   | _ :: _ ->
-    List.exists (fun substring -> Search_pattern.is_substring ~substring descr) name_filter
+    List.exists
+      (fun substring -> Search_pattern.is_substring ~substring descr)
+      name_filter
 ;;
 
 let print_delayed_errors () =
@@ -527,16 +528,17 @@ let add_hooks ((module C) : config) f () =
   C.pre_test_hook ();
   f ()
 ;;
+
 let list_take_while ~f:cond =
   let rec helper acc = function
-  |[] -> List.rev acc
-  | h::tl when cond h -> helper (h::acc) tl
-  | _::tl -> helper acc tl
+    | [] -> List.rev acc
+    | h :: tl when cond h -> helper (h :: acc) tl
+    | _ :: tl -> helper acc tl
   in
   helper []
+;;
 
 let hum_backtrace backtrace =
-
   (* let open Base in *)
   backtrace
   |> String.split_on_char '\n'
@@ -739,13 +741,14 @@ let summarize () =
   match Action.get () with
   | `Ignore ->
     Printf.printf "Sys.argv.(0) = %S\n" Sys.argv.(0);
-    if Sys.argv <> [||] &&
-      (let bname = Filename.basename Sys.argv.(0) in
-        Printf.printf "bname = %S\n" bname;
-      bname = "inline_tests_runner.exe" (*||
-        (StringLabels.starts_with ~prefix:"inline_tests_runner" bname
-      && StringLabels.ends_with ~suffix:".exe" bname) *)
-      )
+    if Sys.argv <> [||]
+       &&
+       let bname = Filename.basename Sys.argv.(0) in
+       Printf.printf "bname = %S\n" bname;
+       bname = "inline_tests_runner.exe"
+       (*||
+         (StringLabels.starts_with ~prefix:"inline_tests_runner" bname
+         && StringLabels.ends_with ~suffix:".exe" bname) *)
     then
       Printf.eprintf
         "inline_tests_runner.exe is not supposed to be run by hand, you \n\
