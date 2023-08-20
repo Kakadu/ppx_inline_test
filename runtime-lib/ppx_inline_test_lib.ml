@@ -1,3 +1,5 @@
+external am_testing : unit -> bool = "Base_am_testing"
+
 module Test_result = struct
   type t =
     | Success
@@ -233,9 +235,9 @@ let parse_descr str =
        (try Some (Scanf.sscanf str " File %S %!" (fun file -> file, None)) with
         | _ -> None))
 ;;
-(*
+
 let () =
-  if Base.Exported_for_specific_uses.am_testing
+  if am_testing()
   then (
     match Array.to_list Sys.argv with
     | name :: "inline-test-runner" :: lib :: rest ->
@@ -347,7 +349,7 @@ let () =
            })
     | _ -> ())
 ;;
-*)
+
 let am_test_runner =
   match Action.get () with
   | `Test_mode _ -> true
