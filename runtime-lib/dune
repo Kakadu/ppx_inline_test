@@ -6,7 +6,7 @@
 (library
  (name ppx_inline_test_lib)
  (modules ppx_inline_test_lib search_pattern)
- (public_name ppx_inline_test.runtime-lib)
+ (public_name ppx_inline_test_nobase.runtime-lib)
  (libraries inline_test_config mtime mtime.clock.os)
  (js_of_ocaml
   (flags --no-sourcemap)

@@ -1,6 +1,6 @@
 (library
  (name ppx_inline_test_runner_lib)
- (public_name ppx_inline_test.runner.lib)
+ (public_name ppx_inline_test_nobase.runner.lib)
  (js_of_ocaml
   (flags --no-sourcemap)
   (javascript_files runtime.js))
