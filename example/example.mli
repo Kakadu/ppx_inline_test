@@ -1,1 +1,1 @@
-open! Core
+(* Intentionally empty *)

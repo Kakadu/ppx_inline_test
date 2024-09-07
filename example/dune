@@ -1,5 +1,5 @@
 (library
  (name ppx_inline_test_example_lib)
- (libraries core core_unix)
+ (libraries unix)
  (preprocess
-  (pps ppx_jane)))
+  (pps ppx_inline_test_nobase)))
