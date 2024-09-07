@@ -1,5 +1,6 @@
 (library
  (name ppx_inline_test_example_lib)
  (libraries unix)
+ (inline_tests)
  (preprocess
   (pps ppx_inline_test_nobase)))

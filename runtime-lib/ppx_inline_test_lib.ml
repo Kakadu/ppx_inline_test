@@ -1,5 +1,3 @@
-external am_testing : unit -> bool = "Base_am_testing"
-
 module Test_result = struct
   type t =
     | Success
@@ -364,7 +362,7 @@ let parse_argv ?current args =
 ;;
 
 let () =
-  if am_testing ()
+  if true
   then (
     try parse_argv (Array.to_list Sys.argv) with
     | Arg.Bad msg ->
@@ -737,7 +735,7 @@ let[@inline never] test_module
               (string_of_module_descr ())))
 ;;
 
-(* *** Part from Base  *)
+(* *** Part from Base *)
 let raise_with_original_backtrace t backtrace =
   Stdlib.Printexc.raise_with_backtrace t backtrace
 ;;
@@ -788,8 +786,7 @@ let summarize () =
       | Stdout -> f stdout
       | File file ->
         (* Not passing Open_creat ensures that the file we are supposed to write to exists *)
-        open_out_gen [ Open_wronly; Open_text ] 0 file
-        |> protectx ~f ~finally:close_out
+        open_out_gen [ Open_wronly; Open_text ] 0 file |> protectx ~f ~finally:close_out
     in
     with_out_channel (fun fout ->
       List.iter (Printf.fprintf fout "%s\n") (Partition.all ()));

@@ -155,19 +155,7 @@ Finally, after running tests, `Ppx_inline_test_lib.exit ()` should be called (to
 exit with an error and a summary of the number of failed tests if there were errors or
 exit normally otherwise).
 
-One can construct a dual-use binary that only runs the tests when prompted to (through the
-command line), by sticking the following piece of code in it, after the tests have run but
-before the binary starts doing non-test side effects. However be aware that
-`Base.am_testing` will be `true` even when not running tests, which may be undesirable.
-
-```ocaml
-match Ppx_inline_test_lib.testing with
-| `Testing `Am_test_runner ->
-  print_endline "Exiting test suite";
-  Ppx_inline_test_lib.exit ()
-| `Testing _ -> exit 0
-| `Not_testing -> ()
-```
+Am_testing was removed together with Base.
 
 Command line arguments
 ----------------------
