@@ -737,6 +737,27 @@ let[@inline never] test_module
               (string_of_module_descr ())))
 ;;
 
+(* *** Part from Base  *)
+let raise_with_original_backtrace t backtrace =
+  Stdlib.Printexc.raise_with_backtrace t backtrace
+;;
+
+exception Finally of exn * exn
+
+let protectx ~f x ~(finally : _ -> unit) =
+  match f x with
+  | res ->
+    finally x;
+    res
+  | exception exn ->
+    let bt = Stdlib.Printexc.get_raw_backtrace () in
+    (match finally x with
+     | () -> raise_with_original_backtrace exn bt
+     | exception final_exn ->
+       (* Unfortunately, the backtrace of the [final_exn] is discarded here. *)
+       raise_with_original_backtrace (Finally (exn, final_exn)) bt)
+;;
+
 let summarize () =
   match Action.get () with
   | `Ignore ->
@@ -768,7 +789,7 @@ let summarize () =
       | File file ->
         (* Not passing Open_creat ensures that the file we are supposed to write to exists *)
         open_out_gen [ Open_wronly; Open_text ] 0 file
-        |> Base.Exn.protectx ~f ~finally:close_out
+        |> protectx ~f ~finally:close_out
     in
     with_out_channel (fun fout ->
       List.iter (Printf.fprintf fout "%s\n") (Partition.all ()));
