@@ -4,7 +4,8 @@
    (:standard -warn-error -32))))
 
 (library
- (name ppx_inline_test_lib)
+ (name ppx_inline_test_nobase_lib)
+ (wrapped false)
  (modules ppx_inline_test_lib search_pattern)
  (public_name ppx_inline_test_nobase.runtime-lib)
  (libraries inline_test_config mtime mtime.clock.os)
