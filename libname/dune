@@ -1,5 +1,5 @@
 (library
  (name ppx_inline_test_libname)
- (public_name ppx_inline_test.libname)
+ (public_name ppx_inline_test_nobase.libname)
  (libraries ppxlib)
  (preprocess no_preprocessing))
