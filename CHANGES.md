@@ -1,3 +1,8 @@
+## Release v0.17.0+nobase-2
+
+* Rename modules to allow linking together with ppx_inline_test
+* Remove ocamlfind dependecy to mtime.clock.os (silences a warning)
+
 ## Release v0.17.0+nobase
 
 Many dependecies are removed
