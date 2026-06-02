@@ -280,6 +280,7 @@ module E = struct
                  ~f:(fun f attributes name_opt ->
                    f ~name:name_opt ~tags:(list_of_option attributes)))
             ~expr
+            ~constraint_:drop
           ^:: nil)
        ^:: nil)
   ;;
