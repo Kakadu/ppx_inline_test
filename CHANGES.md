@@ -1,3 +1,7 @@
+## Release v0.17.0.3
+
+* minimal ppxlib is  0.37 (PR #1)
+
 ## Release v0.17.0+nobase
 
 Many dependecies are removed
