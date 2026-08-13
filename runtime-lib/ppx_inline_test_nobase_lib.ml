@@ -454,13 +454,9 @@ let deault_state = Random.get_state ()
 
 let time_and_reset_random_seeds f =
   let caml_random_state = Stdlib.Random.get_state () in
-  let base_random_state = Stdlib.Random.State.copy deault_state in
-  (* TODO: Check that we are dealing with random state properly *)
   Stdlib.Random.set_state (Lazy.force saved_caml_random_state);
-  Stdlib.Random.set_state (Lazy.force saved_base_random_state);
   let result = time_without_resetting_random_seeds f in
   Stdlib.Random.set_state caml_random_state;
-  Stdlib.Random.set_state base_random_state;
   result
 ;;
 
